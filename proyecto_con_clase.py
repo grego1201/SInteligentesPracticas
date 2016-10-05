@@ -7,6 +7,53 @@ import tkMessageBox
 from PIL import Image, ImageTk
 
 
+
+'''
+
+
+
+		------ IMPORTANTE Y COSAS QUE HACER ------
+
+			Acordarse de la poda cuando hagamos el backtracking
+
+			Para probar el movimiento le añadimos un temporizador (1-2 segundos), 
+				movemos una pieza y volvemos a generar el puzzle para comprobar 
+				que se ha movido
+
+			Buscar el tamaño de la imagen y recomendar en cuanto dividirlo
+
+			Cambiar nombre variables y ponerlo bonito
+
+			Documentacion
+
+
+		------ IMPORTANTE Y COSAS QUE HACER ------
+
+		------ Decisiones ------
+
+			Si el usuario introduce unas dimesiones que no son posibles (no son divisibles)
+				le decimos que no es posible realizarlo con esos numeros con las dimensiones
+				originales pero que reduciremos el tamaño para que sea posible
+
+
+			Al generar las piezas les ponemos un campo en el que identificaremos si es la pieza
+				pivote o no, de este modo solo comprobaremos los movimientos posibles si la pieza es pivote
+
+			Usamos la libreria PIL y TKinter dado que fue la que mas sencilla nos parecio y la que
+				menos problemas nos dio a la hora de instalarla y usarla.
+
+
+		------ Decisiones ------
+
+
+
+
+
+
+'''
+
+
+
 class puzzle(tk.Frame):
 
 	def __init__(self,image, board_grid):
@@ -44,11 +91,16 @@ class puzzle(tk.Frame):
 				image = ImageTk.PhotoImage(self.image.crop((x0, y0, x1, y1)))
 				piece = {'id'     : None,
                          'image'  : image,
-                         'pos_o'  : (x, y),
+                         'pos_o'  : (x, y), 
+                         'pos_p'  : [], # Posibles posiciones a las que puede cambiar
                          'pos_a'  : None,
+                         'pivote' : False, # Identificar que pieza es el pivote 
                          'visible': True}
+
+
+
 				self.tablero.append(piece)
-		self.tablero[0]['visible'] = False 
+		#self.tablero[0]['visible'] = False 
 
 	def mostrar(self):
 		random.shuffle(self.tablero) # shuffle = barajar
@@ -64,7 +116,41 @@ class puzzle(tk.Frame):
 					self.tablero[index]['id'] = id
 				index += 1
 
-def comprobarImagenes(img_o, img_p):
+
+	#Busca todos los movimientos validos y devuelve una lista con estos
+	# Para un movimiento valido es que no se salga del rango, es decir, que si el tamaño maximo es
+	# 4, si intenta moverse a la 5 o a la -1 no puede moverse y no es un movimiento valido
+	def movimientosValidos():
+
+
+	def movimientoCorrecto():
+
+
+	def cambioPiezas():
+
+
+'''
+
+
+
+		------ IMPORTANTE Y COSAS QUE HACER ------
+
+			Adri guapo, tienes que meter el metodo "comprobarImagenes"
+			dentro de la clase puzzle
+
+
+		------                              ------
+
+		|
+		|
+		|
+		|
+		|
+	   \|/
+
+
+'''
+def comprobarImagenes(img_o, img_p, ancho, alto):
 	#carga imagenes
 	img_original = Image.open(img_o)
 	img_puzzle = Image.open(img_p)
@@ -72,18 +158,18 @@ def comprobarImagenes(img_o, img_p):
 	ancho_original, alto_original =img_original.size
 	ancho_puzzle, alto_puzzle =img_puzzle.size
 	#obtiene el tamaño de las piezas
-	ancho_pieza_orig = ancho_original / 4
-	alto_pieza_orig = alto_original / 4
-	ancho_pieza_puz = ancho_puzzle / 4
-	alto_pieza_puz = alto_puzzle / 4
+	ancho_pieza_orig = ancho_original / ancho
+	alto_pieza_orig = alto_original / alto
+	ancho_pieza_puz = ancho_puzzle / ancho
+	alto_pieza_puz = alto_puzzle / alto
 
 	#almacena ambas imagenes en listas (lo mismo hay que cambiarlo a matriz)
 	lista_original=[]
 	lista_puzzle=[]
 
 	#antes habria que comprobar que ambas imagenes son iguales en tamaño
-	for x in range(0,4):
-		for y in range(0,4):
+	for x in range(0,ancho):
+		for y in range(0,alto):
 			x0 = x * ancho_pieza_orig
 			y0 = y * alto_pieza_orig
 			x1 = x0 + ancho_pieza_orig
@@ -109,8 +195,7 @@ def comprobarImagenes(img_o, img_p):
 					correctos.append(y)
 					y=len(lista_puzzle)
 
-	if iguales==16: #16 porque es de 4x4
-
+	if iguales==ancho*alto: #ancho por alto porque son las dimensiones de la imagen
 		print ("Imagen correcta")
 	else:
 		print ("Imagen incorrecta")
@@ -135,11 +220,13 @@ def compararTrozo(img_original, img_puzzle):
 	return correcto
 
 
+
 if __name__ == '__main__':
 	#AlhambraPixelesModificado4x4
 	#IntermedioAlhambra41
 	comprobarImagenes('AlhambraInicialPuzzle4x4.png','IntermedioAlhambra41.png')
-	#app = puzzle('alhambra.png', 5)
-	#app.master.title('prueba')
-	#app.mainloop()
+	app = puzzle('IntermedioAlhambra41.png', 4)
+	app.master.title('prueba')
+	app.mainloop()
+
 
