@@ -182,7 +182,6 @@ class puzzle(tk.Frame):
 
 	def movimientoCorrecto(): ===> "Esto por ahora nada no?"
 
-
 	def cambioPiezas(piece1,piece2):
 
 		piece_aux = none
@@ -192,47 +191,11 @@ class puzzle(tk.Frame):
 
 	'''
 
-def leerEntero():
-	while True:
-		try:
-			num = input("Introduzca el numero: ")
-			return num
-		except:
-			print "Porfavor introduzca un numero"
-
-
 #la clase puzzle es toda la aplicacion, esto solo es el main para lanzarla
 if __name__ == '__main__':
 	#AlhambraPixelesModificado4x4
 	#IntermedioAlhambra41
 
-	while True:
-
-		try:
-
-			opcion = input("Introduzca la opción que desea: \n\
-			1 --> Introducir nombre imagen desordenada \n\
-			2 --> Introducir nombre imagen original\n\
-			3 --> Introducir ancho y altura \n\
-			4 --> Cargar imagen \n\
-			5 --> Salir\n\
-			")
-
-			if (opcion > 6 or opcion < 1):
-				break
-
-			if opcion==1:
-				nombreDes = raw_input("Introduzca el nombre del fichero: \n")
-			elif opcion==2:
-				nombreOr = raw_input("Introduzca el nombre del fichero: \n")
-			elif opcion==3:
-				anchoAlto = leerEntero()
-			elif opcion==4:
-				app = puzzle('ImagenesPrueba/'+ nombreDes,'ImagenesPrueba/'+nombreOr, anchoAlto) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
-				app.master.title('prueba')
-				app.mainloop()
-			elif opcion==5:
-				break
-
-		except:
-			print "Porfavor introduzca una opcion"
+	app = puzzle('ImagenesPrueba/AlhambraInicialPuzzle4x4.png','ImagenesPrueba/IntermedioAlhambra41.png', 4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
+	app.master.title('prueba')
+	app.mainloop()
