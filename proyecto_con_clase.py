@@ -11,8 +11,8 @@ from PIL import Image, ImageTk
 '''
 		------ IMPORTANTE Y COSAS QUE HACER ------
 			Acordarse de la poda cuando hagamos el backtracking
-			Para probar el movimiento le añadimos un temporizador (1-2 segundos), 
-				movemos una pieza y volvemos a generar el puzzle para comprobar 
+			Para probar el movimiento le añadimos un temporizador (1-2 segundos),
+				movemos una pieza y volvemos a generar el puzzle para comprobar
 				que se ha movido
 			Buscar el tamaño de la imagen y recomendar en cuanto dividirlo
 			Cambiar nombre variables y ponerlo bonito
@@ -46,8 +46,8 @@ class puzzle(tk.Frame):
 		self.mostrar()
 
 	def cargarImagen(self, image_o,image_p):
-		image_o= Image.open(image_o)	
-		image_p= Image.open(image_p)	
+		image_o= Image.open(image_o)
+		image_p= Image.open(image_p)
 		self.image=image_p
 		self.image_original=image_o
 		self.board_width=image_p.size[0]
@@ -75,10 +75,10 @@ class puzzle(tk.Frame):
 				image = ImageTk.PhotoImage(self.image.crop((x0, y0, x1, y1)))
 				piece = {'id'     : None,
                          'image'  : image,
-                         'pos_o'  : (x, y), 
+                         'pos_o'  : (x, y),
                          #'pos_p'  : get_pieces_around(self), # Posibles posiciones a las que puede cambiar
                          'pos_a'  : None,
-                         'pivote' : False, # Identificar que pieza es el pivote 
+                         'pivote' : False, # Identificar que pieza es el pivote
                          }
 
 				self.tablero.append(piece)
@@ -130,7 +130,7 @@ class puzzle(tk.Frame):
 		iguales= 0
 		correctos = []
 		correctos.append([])
-		#se comparan las imagenes trozo a trozo				
+		#se comparan las imagenes trozo a trozo
 		for x in range(0, len(lista_original)):
 			for y in range(0,len(lista_puzzle)):
 				if (y in correctos) == False:#poda para que no busque en imagenes que ya ha mirado y están ok
@@ -179,24 +179,23 @@ class puzzle(tk.Frame):
 					....... nada
 				else:
 					mov_validos.append(item)
-				 
+
 	def movimientoCorrecto(): ===> "Esto por ahora nada no?"
-		
+
 	def cambioPiezas(piece1,piece2):
-		
+
 		piece_aux = none
 		piece_aux= piece1
 		piece1=piece2
 		piece2=piece_aux
-		
+
 	'''
 
 #la clase puzzle es toda la aplicacion, esto solo es el main para lanzarla
 if __name__ == '__main__':
 	#AlhambraPixelesModificado4x4
 	#IntermedioAlhambra41
-	
-	app = puzzle('AlhambraInicialPuzzle4x4.png','IntermedioAlhambra41.png', 4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
+
+	app = puzzle('ImagenesPrueba/AlhambraInicialPuzzle4x4.png','ImagenesPrueba/IntermedioAlhambra41.png', 4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
 	app.master.title('prueba')
 	app.mainloop()
-
