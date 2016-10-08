@@ -33,16 +33,32 @@ from PIL import Image, ImageTk
 
 class puzzle(tk.Frame):
 
-	def __init__(self,image_o,image_p, cuadricula):
+	def __init__(self,image_o,image_p, ancho, alto):
 		tk.Frame.__init__(self)
 		self.grid()
-		self.cuadricula=cuadricula
-		self.comprobarImagenes(image_o,image_p,cuadricula,cuadricula) #esto habra que cambiarlo para mandarle filas y columnas metidas por el usuario
+		self.ancho=ancho
+		self.alto=alto
+		self.comprobarImagenes(image_o,image_p,ancho,alto) #esto habra que cambiarlo para mandarle filas y columnas metidas por el usuario
 		#si fuese incorrecta en el metodo anterior tenemos que añadir aqui para que no haga lo siguiente
 		#ya que no deberia mostrarla al ser incorrecta, digo yo, no sé que querrá xD
 		self.cargarImagen(image_o, image_p)
 		self.create_widgets()
 		self.crearTablero()
+
+		for i in self.tablero:
+			if i['pos_o']==(3,1):
+				pieza1 = i
+
+		for i in self.tablero:
+			if i['pos_o']==(3,2):
+
+				pieza2 = i
+
+		self.cambioPiezas(pieza1,pieza2)
+
+
+		#print self.tablero
+
 		self.mostrar()
 
 	def cargarImagen(self, image_o,image_p):
@@ -54,8 +70,8 @@ class puzzle(tk.Frame):
 		self.board_height=image_p.size[1]
 		#esto lo cambio cuando tenga un rato, ahora mismo toma matriz cuadrada, cuando añadamos que el usuario
 		#meta el tamaño habra que cambiar cuadricula por filas y columnas, que habra que almacenar tb en self y demas
-		self.piece_width=self.board_width / self.cuadricula
-		self.piece_height=self.board_height / self.cuadricula
+		self.piece_width=self.board_width / self.ancho
+		self.piece_height=self.board_height / self.alto
 
 
 	def create_widgets(self):
@@ -66,8 +82,8 @@ class puzzle(tk.Frame):
 	def crearTablero(self):
 		self.tablero = []
 
-		for x in xrange(self.cuadricula):
- 			for y in xrange(self.cuadricula):
+		for x in xrange(self.ancho):
+ 			for y in xrange(self.alto):
 				x0 = x * self.piece_width
 				y0 = y * self.piece_height
 				x1 = x0 + self.piece_width
@@ -87,8 +103,8 @@ class puzzle(tk.Frame):
 	def mostrar(self):
 		#random.shuffle(self.tablero) # shuffle = barajar, no hace falta al dar el estado inigial ellos
 		index = 0
-		for x in xrange(self.cuadricula):
-			for y in xrange(self.cuadricula):
+		for x in xrange(self.ancho):
+			for y in xrange(self.alto):
 				self.tablero[index]['pos_a'] = (x, y)
 				x1 = x * self.piece_width
 				y1 = y * self.piece_height
@@ -149,27 +165,40 @@ class puzzle(tk.Frame):
 	# Para un movimiento valido es que no se salga del rango, es decir, que si el tamaño maximo es
 	# 4, si intenta moverse a la 5 o a la -1 no puede moverse y no es un movimiento valido
 	def get_pieces_around(self):
-	        pieces = {'center': None,
-	                  'right' : None,
-	                  'left'  : None,
-	                  'top'   : None,
-	                  'bottom': None}
-	        for piece in self.tablero:
-	            if not piece['visible']:
-	                pieces['center'] = piece
-	                break
-	        x0, y0 = pieces['center']['pos_a']
-	        for piece in self.tablero:
-	            x1, y1 = piece['pos_a']
-	            if y0 == y1 and x1 == x0 + 1:
-	                pieces['right'] = piece
-	            if y0 == y1 and x1 == x0 - 1:
-	                pieces['left'] = piece
-	            if x0 == x1 and y1 == y0 - 1:
-	                pieces['top'] = piece
-	            if x0 == x1 and y1 == y0 + 1:
-	                pieces['bottom'] = piece
-	        return pieces
+		pieces = {'center': None,
+		'right':None,
+		'left':None,
+		'top':None,
+		'bottom':None}
+
+		for piece in self.tablero:
+			if piece['pivote']:
+				pieces['center']=piece
+				break
+
+		x0, y0 = pieces['center']['pos_a']
+
+		for piece in self.tablero:
+			x1,y1 = piece['pos_a']
+
+			if y0 == y1 and x1 == x0 + 1:
+				print "hay a la derecha"
+				pieces['right'] = piece
+
+			if y0 == y1 and x1 == x0 -1:
+				print "hay a la izq"
+				pieces['left'] = piece
+
+			if x0 == x1 and y1 == y0 - 1:
+				print "hay arriba"
+				pieces['top'] = piece
+
+			if x0 == x1 and y1 == y0 + 1:
+				print "hay abajo"
+				pieces['bottom'] = piece
+
+		return pieces
+
 
 	'''def movimientosValidos(pieces):
 		Esto no se podria resolver mirando dentro de las piezas obtenidas de la def pieces_around que recoge una lista con los las 			piezas que rodean la pieza pivote y con esta lista solo tendriamos que recorrer las que no sean none para ver los movimiento 			validos
@@ -181,21 +210,63 @@ class puzzle(tk.Frame):
 					mov_validos.append(item)
 
 	def movimientoCorrecto(): ===> "Esto por ahora nada no?"
+'''
 
-	def cambioPiezas(piece1,piece2):
+	def cambioPiezas(self,pieza1, pieza2):
 
-		piece_aux = none
-		piece_aux= piece1
-		piece1=piece2
-		piece2=piece_aux
+		aux = pieza1["image"]
+		pieza1["image"]=pieza2["image"]
+		pieza2["image"]=aux
 
-	'''
+
+
+
+
+
+def leerEntero():
+	while True:
+		try:
+			num = input("Introduzca el numero: ")
+			return num
+		except:
+			print "Porfavor introduzca un numero"
+
 
 #la clase puzzle es toda la aplicacion, esto solo es el main para lanzarla
 if __name__ == '__main__':
 	#AlhambraPixelesModificado4x4
 	#IntermedioAlhambra41
 
-	app = puzzle('ImagenesPrueba/AlhambraInicialPuzzle4x4.png','ImagenesPrueba/IntermedioAlhambra41.png', 4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
-	app.master.title('prueba')
-	app.mainloop()
+	while True:
+
+		try:
+
+			opcion = input("Introduzca la opción que desea: \n\
+			1 --> Introducir nombre imagen desordenada \n\
+			2 --> Introducir nombre imagen original\n\
+			3 --> Introducir ancho y altura \n\
+			4 --> Cargar imagen \n\
+			5 --> Salir\n\
+			")
+
+			if (opcion > 6 or opcion < 1):
+				break
+
+			if opcion==1:
+				nombreDes = raw_input("Introduzca el nombre del fichero: \n")
+			elif opcion==2:
+				nombreOr = raw_input("Introduzca el nombre del fichero: \n")
+			elif opcion==3:
+				print "Introduzca el ancho"
+				ancho = leerEntero()
+				print "Introduzca el alto"
+				alto = leerEntero()
+			elif opcion==4:
+				app = puzzle('ImagenesPrueba/AlhambraInicialPuzzle4x4.png','ImagenesPrueba/AlhambraPixelesModificado4x4.png', 4,4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
+				app.master.title('prueba')
+				app.mainloop()
+			elif opcion==5:
+				break
+
+		except:
+			print "Porfavor introduzca una opcion"
