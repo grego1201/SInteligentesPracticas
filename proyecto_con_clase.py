@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import random
+import time
 import Tkinter as tk
 import tkMessageBox
 from PIL import Image, ImageTk
-
-
 
 '''
 		------ IMPORTANTE Y COSAS QUE HACER ------
@@ -29,8 +28,6 @@ from PIL import Image, ImageTk
 		------ Decisiones ------
 '''
 
-
-
 class puzzle(tk.Frame):
 
 	def __init__(self,image_o,image_p, ancho, alto):
@@ -41,35 +38,25 @@ class puzzle(tk.Frame):
 		self.comprobarImagenes(image_o,image_p,ancho,alto) #esto habra que cambiarlo para mandarle filas y columnas metidas por el usuario
 		#si fuese incorrecta en el metodo anterior tenemos que añadir aqui para que no haga lo siguiente
 		#ya que no deberia mostrarla al ser incorrecta, digo yo, no sé que querrá xD
-		self.cargarImagen(image_o, image_p)
+		self.obtenerMedidas()
 		self.create_widgets()
 		self.crearTablero()
-
-		for i in self.tablero:
-			if i['pos_o']==(3,1):
-				pieza1 = i
-
-		for i in self.tablero:
-			if i['pos_o']==(3,2):
-
-				pieza2 = i
-
-		self.cambioPiezas(pieza1,pieza2)
-
-
-		#print self.tablero
-
 		self.mostrar()
+		self.crearEventos()
+	
+	def crearEventos(self):
+		self.canvas.bind_all('<KeyPress-Up>',self.mover)
+		self.canvas.bind_all('<KeyPress-Down>',self.mover)
+		self.canvas.bind_all('<KeyPress-Right>',self.mover)
+		self.canvas.bind_all('<KeyPress-Left>',self.mover)
 
-	def cargarImagen(self, image_o,image_p):
-		image_o= Image.open(image_o)
-		image_p= Image.open(image_p)
-		self.image=image_p
-		self.image_original=image_o
-		self.board_width=image_p.size[0]
-		self.board_height=image_p.size[1]
-		#esto lo cambio cuando tenga un rato, ahora mismo toma matriz cuadrada, cuando añadamos que el usuario
-		#meta el tamaño habra que cambiar cuadricula por filas y columnas, que habra que almacenar tb en self y demas
+
+	def obtenerMedidas(self):
+		#medidas del tablero
+		self.board_width=self.img_puzzle.size[0]
+		self.board_height=self.img_puzzle.size[1]
+		
+		#medidas de la pieza
 		self.piece_width=self.board_width / self.ancho
 		self.piece_height=self.board_height / self.alto
 
@@ -81,44 +68,99 @@ class puzzle(tk.Frame):
 
 	def crearTablero(self):
 		self.tablero = []
+		contadorPivote=0
 
 		for x in xrange(self.ancho):
- 			for y in xrange(self.alto):
+			for y in xrange(self.alto):
 				x0 = x * self.piece_width
 				y0 = y * self.piece_height
 				x1 = x0 + self.piece_width
 				y1 = y0 + self.piece_height
-				image = ImageTk.PhotoImage(self.image.crop((x0, y0, x1, y1)))
+				image = ImageTk.PhotoImage(self.img_puzzle.crop((x0, y0, x1, y1)))
 				piece = {'id'     : None,
-                         'image'  : image,
-                         'pos_o'  : (x, y),
-                         #'pos_p'  : get_pieces_around(self), # Posibles posiciones a las que puede cambiar
-                         'pos_a'  : None,
-                         'pivote' : False, # Identificar que pieza es el pivote
-                         }
+					'image'  : image,
+					'pos_o'  : (x, y),
+					#'pos_p'  : get_pieces_around(self), # Posibles posiciones a las que puede cambiar
+					#'pos_a'  : None,
+				 	'pivote' : False, # Identificar que pieza es el pivote
+				 	}
+				if contadorPivote < self.pivote:
+					contadorPivote+=1
+				else:
+					piece['pivote']=True
 
 				self.tablero.append(piece)
 
-
 	def mostrar(self):
-		#random.shuffle(self.tablero) # shuffle = barajar, no hace falta al dar el estado inigial ellos
 		index = 0
 		for x in xrange(self.ancho):
 			for y in xrange(self.alto):
-				self.tablero[index]['pos_a'] = (x, y)
 				x1 = x * self.piece_width
 				y1 = y * self.piece_height
 				image = self.tablero[index]['image']
-				id = self.canvas.create_image(x1, y1, image=image, anchor=tk.NW)
-				self.tablero[index]['id'] = id
+				self.tablero[index]['id']= self.pintar(x1,y1,image)
 				index += 1
+
+	def pintar(self,x,y,imagen):
+		id = self.canvas.create_image(x, y, image=imagen, anchor=tk.NW)
+		return id
+			
+	def mover(self,event):
+		indice1=indice2=0
+		coorX=coorY=0
+		
+		if self.movimientosValidos(self.tablero[self.pivote]['pos_o'],event.keysym):
+			
+			if event.keysym =='Up':
+				coorX=self.tablero[self.pivote]['pos_o'][0]
+				coorY=self.tablero[self.pivote]['pos_o'][1]-1
+			if event.keysym =='Down':
+				coorX=self.tablero[self.pivote]['pos_o'][0]
+				coorY=self.tablero[self.pivote]['pos_o'][1]+1
+			if event.keysym =='Left':
+				coorX=self.tablero[self.pivote]['pos_o'][0]-1
+				coorY=self.tablero[self.pivote]['pos_o'][1]
+			if event.keysym =='Right':
+				coorX=self.tablero[self.pivote]['pos_o'][0]+1
+				coorY=self.tablero[self.pivote]['pos_o'][1]
+
+			#busca la pieza hacia la que quiere moverse
+			for i in self.tablero:		
+				if i['pos_o']==(coorX,coorY):
+					break
+				indice2+=1
+
+			#las intercambia
+			self.cambiarPiezas(self.pivote,indice2)
+
+			#las vuelve a pintar en sus nuevas posiciones
+			x = int(self.tablero[self.pivote]['pos_o'][0]) * self.piece_width
+			y = int(self.tablero[self.pivote]['pos_o'][1]) * self.piece_height
+			aux=self.pintar(x, y, self.tablero[self.pivote]['image'])
+
+			x = int(self.tablero[indice2]['pos_o'][0]) * self.piece_width
+			y = int(self.tablero[indice2]['pos_o'][1]) * self.piece_height
+			aux=self.pintar(x, y, self.tablero[indice2]['image'])
+
+			self.pivote=indice2
+
+	def movimientosValidos(self, coor, movimiento):
+		valido=True
+
+		if (coor[0]==0 and movimiento=='Left') or (coor[0]==3 and movimiento=='Right') or (coor[1]==0 and movimiento=='Up') or (coor[1]==3 and movimiento=='Down'):
+			valido=False
+
+		return valido
+
 
 	def comprobarImagenes(self,img_o, img_p,columnas,filas):
 		#carga imagenes
-		img_original = Image.open(img_o)
-		img_puzzle = Image.open(img_p)
+		self.img_original = Image.open(img_o)
+		self.img_puzzle = Image.open(img_p)
+
 		#obtiene sus tamaños
-		ancho_o, alto_o =img_original.size
+		ancho_o, alto_o =self.img_original.size
+
 		#obtiene el tamaño de las piezas
 		ancho_pieza = ancho_o/ columnas
 		alto_pieza = alto_o / filas
@@ -134,31 +176,31 @@ class puzzle(tk.Frame):
 				y0 = y * alto_pieza
 				x1 = x0 + ancho_pieza
 				y1 = y0 + alto_pieza
-				lista_original.append(img_original.crop((x0, y0, x1, y1)))
-				lista_puzzle.append(img_puzzle.crop((x0, y0, x1, y1)))
-
-				#lo comentado seria si se mete en la clase, ya que necesita el tk.Frame
-				'''img1=ImageTk.PhotoImage(img_original.crop((x0, y0, x1, y1)))
-				lista_original.append(img1)
-				img2=ImageTk.PhotoImage(img_puzzle.crop((x0, y0, x1, y1)))
-				lista_puzzle.append(img2) '''
+				lista_original.append(self.img_original.crop((x0, y0, x1, y1)))
+				lista_puzzle.append(self.img_puzzle.crop((x0, y0, x1, y1)))
 
 		iguales= 0
-		correctos = []
-		correctos.append([])
+
 		#se comparan las imagenes trozo a trozo
 		for x in range(0, len(lista_original)):
 			for y in range(0,len(lista_puzzle)):
-				if (y in correctos) == False:#poda para que no busque en imagenes que ya ha mirado y están ok
 					if lista_original[x] == lista_puzzle[y]:
 						iguales = iguales + 1
-						correctos.append(y)
-						y=len(lista_puzzle)
+						if x == 0: #si x es 0 en la original es la negra, el pivote, asi que almacena en que posicion está en el puzzle para luego
+							self.pivote=y
+						lista_puzzle.pop(y)
+						break
+
 
 		if iguales==columnas*filas: #numero de celdas
 			print ("Imagen correcta")
 		else:
 			print ("Imagen incorrecta")
+
+
+		#vacia las listas para que no se queden por ahi en memoria, no se si hara falta
+		lista_puzzle=[]
+		lista_original=[]
 
 
 	#Busca todos los movimientos validos y devuelve una lista con estos
@@ -200,27 +242,14 @@ class puzzle(tk.Frame):
 		return pieces
 
 
-	'''def movimientosValidos(pieces):
-		Esto no se podria resolver mirando dentro de las piezas obtenidas de la def pieces_around que recoge una lista con los las 			piezas que rodean la pieza pivote y con esta lista solo tendriamos que recorrer las que no sean none para ver los movimiento 			validos
-		mov_validos=[]
-			for item in xrange(pieces):
-				if item == none:
-					....... nada
-				else:
-					mov_validos.append(item)
-
-	def movimientoCorrecto(): ===> "Esto por ahora nada no?"
-'''
-
-	def cambioPiezas(self,pieza1, pieza2):
-
-		aux = pieza1["image"]
-		pieza1["image"]=pieza2["image"]
-		pieza2["image"]=aux
-
-
-
-
+	#cambia todo menos las coordenadas
+	def cambiarPiezas(self, id1, id2):
+		aux = self.tablero[id1]
+		coor2=self.tablero[id2]['pos_o']
+		self.tablero[id1]=self.tablero[id2]
+		self.tablero[id1]['pos_o']=aux['pos_o']
+		self.tablero[id2]=aux
+		self.tablero[id2]['pos_o']=coor2
 
 
 def leerEntero():
@@ -236,7 +265,11 @@ def leerEntero():
 if __name__ == '__main__':
 	#AlhambraPixelesModificado4x4
 	#IntermedioAlhambra41
+	app = puzzle('AlhambraInicialPuzzle4x4.png','intermedioAlhambra41.png', 4,4) 
+	app.master.title('prueba')
+	app.mainloop()
 
+'''
 	while True:
 
 		try:
@@ -262,11 +295,12 @@ if __name__ == '__main__':
 				print "Introduzca el alto"
 				alto = leerEntero()
 			elif opcion==4:
-				app = puzzle('ImagenesPrueba/AlhambraInicialPuzzle4x4.png','ImagenesPrueba/AlhambraPixelesModificado4x4.png', 4,4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
+				app = puzzle('AlhambraInicialPuzzle4x4.png','intermedioAlhambra41.png', 4,4) #el 4 es el numero de filas y columnas, tendremos que añadir algo para que las pida al usuario
 				app.master.title('prueba')
 				app.mainloop()
+				break
 			elif opcion==5:
 				break
 
 		except:
-			print "Porfavor introduzca una opcion"
+			print "Porfavor introduzca una opcion"'''
