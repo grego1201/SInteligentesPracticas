@@ -43,38 +43,45 @@ class puzzle(tk.Frame):
 	def __init__(self,imagen_o,imagen_p, columnas, filas):
 		tk.Frame.__init__(self)
 		self.grid()
+
 		self.columnas=columnas
 		self.filas=filas
-		self.obtener_datos(imagen_o, imagen_p)
-		self.crear_tablero_original()
-		if self.comprobar_imagenes():
-			self.create_widgets()
-			self.mostrar()
-			self.after(1000,self.mover)
-			self.after(5000,self.crear_imagen) #crea una imagen del puzzle para probar el metodo
-		else:
-			print ("--- La imágenes no son iguales ---")
+
+		if self.obtener_datos(imagen_o, imagen_p):
+			self.crear_tablero_original()
+			if self.comprobar_imagenes():
+				self.crear_canvas()
+				self.mostrar()
+				self.after(1000,self.mover) #cada 1s llama al metodo mover 
+				self.after(5000,self.crear_imagen) #crea una imagen del puzzle para probar el metodo a los 5s
+			else:
+				print ("--- La imágenes no son iguales ---")
 
 	def obtener_datos(self, img_o, img_p):	
-		self.img_original=Image.open(img_o)
-		self.img_puzzle= Image.open(img_p)
-		self.ancho_tablero=self.img_original.size[0]
-		self.alto_tablero=self.img_original.size[1]
-		self.ancho_pieza=self.ancho_tablero / self.columnas
-		self.alto_pieza=self.alto_tablero / self.filas
+		try:
+			self.img_original=Image.open(img_o) #carga la imagen inicial
+			self.img_puzzle= Image.open(img_p) #carga la imagen con el estado inicial
 
-	def create_widgets(self):
-	    args = dict(width=self.ancho_tablero, height=self.alto_tablero)
-	    self.canvas = tk.Canvas(self, **args)
-	    self.canvas.grid()
+			#establece el ancho y alto del tablero
+			self.ancho_tablero=self.img_original.size[0]
+			self.alto_tablero=self.img_original.size[1]
 
+			#establece el alto y ancho de las piezas
+			self.ancho_pieza=self.ancho_tablero / self.columnas
+			self.alto_pieza=self.alto_tablero / self.filas
+
+			return True
+		except:
+			print("La imagen seleccionada no se encuentra en el directorio")
+			return False
+		
 	def crear_tablero_original(self):
-		self.tablero_original = []
-		self.tablero_puzzle=[]
+		self.tablero_original = [] #almacena el tablero conforme estaría resuelto, almacena tuplas (id,coordenadas), las coordenadas x,y simulan una matriz
+		self.tablero_puzzle=[] #almacena el tablero conforme al estado inicial, almacena tuplas (id,coordenadas),las coordenadas x,y simulan una matriz
 
-		self.listaImg_Original=[]
-		self.listaImg_Puzzle=[]
-		self.imagenes=[]
+		self.listaImg_Original=[] #almacena la imagen original cortada en trozos, sirve para compararla con la otra imagen y para generar una imagen png nueva
+		self.listaImg_Puzzle=[] #almacena la imagen del estado inicial en trozos, para compararla con la original, luego se vacia
+		self.imagenes=[] #almacena los trozos igual que en listaImg_Original pero en forma PhotoImage, necesario para mostrarlos en el canvas
 
 		contadorPivote=0
 		ids=0
@@ -87,26 +94,34 @@ class puzzle(tk.Frame):
 				y1 = y0 + self.alto_pieza
 
 				#foto original
-				if x==0 and y==0:
-					self.listaImg_Original.append(Image.new("RGB",(self.ancho_pieza,self.alto_pieza),"black"))#en esta se almacenan los trozos de imagenes sin tratar para comprobarlos, luego se vacia
-					self.imagenes.append(ImageTk.PhotoImage(self.listaImg_Original[ids]))#se almacenan todos los trozos aptos para mostrar
+				if x==0 and y==0: #para la imagen 0.0 pone una en negro
+					self.listaImg_Original.append(Image.new("RGB",(self.ancho_pieza,self.alto_pieza),"black"))
+					self.imagenes.append(ImageTk.PhotoImage(self.listaImg_Original[ids]))
 				else:				
-					self.listaImg_Original.append(self.img_original.crop((x0, y0, x1, y1))) #en esta se almacenan los trozos de imagenes sin tratar para comprobarlos, luego se vacia
-					self.imagenes.append(ImageTk.PhotoImage(self.listaImg_Original[ids]))#se almacenan todos los trozos aptos para mostrar
+					self.listaImg_Original.append(self.img_original.crop((x0, y0, x1, y1)))
+					self.imagenes.append(ImageTk.PhotoImage(self.listaImg_Original[ids]))
 
-				self.tablero_original.append(self.nueva_pieza(ids,(x,y))) #almacena la id y la posicion x,y en la matriz
+				self.tablero_original.append(self.nueva_pieza(ids,(x,y))) #crea una nueva pieza que almacena la id y la posicion x,y que tendrá
+
+				''' Las ids de las piezas hacen referencia al indice de las listas de imagenes: ListaImg_Original e imagenes
+					de forma que no almacenemos imagenes en cada pieza, si no solo un identificador de la imagen real, así ocupa menos
+					espacio cara a la generación de estados, y en caso de querer mortrarla o crear una imagen solo hay que emplear
+					esa id como indice de las listas '''
+
 
 				#foto puzzle
-				self.listaImg_Puzzle.append(self.img_puzzle.crop((x0, y0, x1, y1)))#en esta se almacenan los trozos de imagenes sin tratar para comprobarlos, luego se vacia
-				self.tablero_puzzle.append(self.nueva_pieza(None,(x,y)))
+				self.listaImg_Puzzle.append(self.img_puzzle.crop((x0, y0, x1, y1)))
+				self.tablero_puzzle.append(self.nueva_pieza(None,(x,y))) #crea una nueva pieza sin id, con la posicion que tendrá
 				ids+=1
-
-				''' tanto el tablero original como el puzzle(estado inicial) almacenan solo ids y posiciones x,y, para mostrar se cogen las imagenes
-				de self.imagenes y se muestran '''
 
 		#establece el pivote en el tablero original 
 		self.tablero_original[0]['pivote']=True
 		self.pivote=0
+
+	def crear_canvas(self):
+	    args = dict(width=self.ancho_tablero, height=self.alto_tablero)
+	    self.canvas = tk.Canvas(self, **args)
+	    self.canvas.grid()
 
 	def comprobar_imagenes(self):
 		iguales= 0
@@ -114,27 +129,30 @@ class puzzle(tk.Frame):
 		#se comparan las imagenes trozo a trozo
 		for x in range(0, len(self.listaImg_Original)):
 			for y in range(0,len(self.listaImg_Puzzle)):
-					if self.listaImg_Original[x] == self.listaImg_Puzzle[y]:
+					if self.listaImg_Original[x] == self.listaImg_Puzzle[y]: # si los dos trozos son iguales...
 						iguales = iguales + 1
-						self.tablero_puzzle[y]['id']=self.tablero_original[x]['id']	
-						self.listaImg_Puzzle[y]=[] # por si hay muchas imagenes dle mismo color, para que no vuelva a comparar y asignar el id a la misma
-						if x == 0: #establece el pivote en el tablero puzzle
+
+						self.tablero_puzzle[y]['id']=self.tablero_original[x]['id']	#establece a la pieza desordenada la id que corresponde con la imagen original
+						self.listaImg_Puzzle[y]=[] # por si hay muchas imagenes dle mismo color, para que no vuelva a comparar y asignar el id a la misma, se elimina de la lista
+						
+						if x == 0: #establece el pivote en el tablero puzzle (ya que cuando x sea 0, en el tablero original(y por tanto en la lista original) será la imagen negra)
 							self.tablero_puzzle[y]['pivote']=True
-							self.pivote=y						
+							self.pivote=y	
+
 						break
 
-		self.listaImg_Puzzle=[]
+		self.listaImg_Puzzle=[] #vacia la lista que no va a volver a utilizarse para liberar memoria
 
-		if iguales==self.columnas*self.filas: #numero de celdas
+		#si el numero de piezas iguales coincide con el tamaño de la matriz (filas*columnas) es que las dos imagenes son iguales
+		if iguales==self.columnas*self.filas: 
 			return True
 		else:
 			return False	
 
-
 	def nueva_pieza(self, ids, coor):
 		piece = {'id': ids,
 		'pos_o'  : coor,
-		'pivote' : False, # Identificar que pieza es el pivote
+		'pivote' : False, 
 		}
 
 		return piece
@@ -146,57 +164,63 @@ class puzzle(tk.Frame):
 			for y in xrange(self.filas):
 				x1 = x * self.ancho_pieza
 				y1 = y * self.alto_pieza
-				#print(self.tablero_puzzle[index]['id'])
-				image = self.imagenes[self.tablero_puzzle[index]['id']]
 
+				#obtiene la imagen correspondiente a la id almacenada y la muestra en la posicion x,y
+				image = self.imagenes[self.tablero_puzzle[index]['id']]
 				self.pintar(x1,y1,image)
+
 				index += 1
 
 	def pintar(self,x,y,imagen):
 		self.canvas.create_image(x, y, image=imagen, anchor=tk.NW)
 	
-
 	def mover(self):
-		indice1=indice2=0
+		indice=0
 		coorX=coorY=0
 
-		a=random.randint(0,3)
+		aleatorio=random.randint(0,3)
 		movimiento=''
 
-		if a ==0:
-			movimiento= MOVE_UP
+		if aleatorio ==0:
+			movimiento = MOVE_UP
 			coorX=self.tablero_puzzle[self.pivote]['pos_o'][0]
 			coorY=self.tablero_puzzle[self.pivote]['pos_o'][1]-1
-		if a ==1:
+		if aleatorio ==1:
 			movimiento= MOVE_DOWN
 			coorX=self.tablero_puzzle[self.pivote]['pos_o'][0]
 			coorY=self.tablero_puzzle[self.pivote]['pos_o'][1]+1
-		if a ==2:
+		if aleatorio ==2:
 			movimiento= MOVE_LEFT
 			coorX=self.tablero_puzzle[self.pivote]['pos_o'][0]-1
 			coorY=self.tablero_puzzle[self.pivote]['pos_o'][1]
-		if a ==3:
+		if aleatorio ==3:
 			movimiento= MOVE_RIGHT
 			coorX=self.tablero_puzzle[self.pivote]['pos_o'][0]+1
 			coorY=self.tablero_puzzle[self.pivote]['pos_o'][1]
 
+		#comprueba si el pivote que está en x,y puede moverse a la posicion definida anteriormente
 		if self.movimientos_validos(self.tablero_puzzle[self.pivote]['pos_o'],movimiento):
 			
+			#busca la pieza que corresponde a la posicion a la que va a moverse el pivote
 			for i in self.tablero_puzzle:		
 				if i['pos_o']==(coorX,coorY):
 					break
-				indice2+=1
+				indice+=1
 
-			self.cambiar_piezas(self.pivote,indice2)
+			#las intercambia
+			self.cambiar_piezas(self.pivote,indice)
+
+			#pinta ambas piezas en la nueva posicion
 			x = int(self.tablero_puzzle[self.pivote]['pos_o'][0]) * self.ancho_pieza
 			y = int(self.tablero_puzzle[self.pivote]['pos_o'][1]) * self.alto_pieza
 			aux=self.pintar(x, y, self.imagenes[ self.tablero_puzzle[self.pivote]['id']])
 
-			x = int(self.tablero_puzzle[indice2]['pos_o'][0]) * self.ancho_pieza
-			y = int(self.tablero_puzzle[indice2]['pos_o'][1]) * self.alto_pieza
-			aux=self.pintar(x, y, self.imagenes[self.tablero_puzzle[indice2]['id']])
+			x = int(self.tablero_puzzle[indice]['pos_o'][0]) * self.ancho_pieza
+			y = int(self.tablero_puzzle[indice]['pos_o'][1]) * self.alto_pieza
+			aux=self.pintar(x, y, self.imagenes[self.tablero_puzzle[indice]['id']])
 
-			self.pivote=indice2
+			self.pivote=indice
+
 			self.after(1000,self.mover)
 		else:
 			self.after(0,self.mover)
@@ -209,26 +233,28 @@ class puzzle(tk.Frame):
 
 		return valido
 
-
-	#cambia todo menos las coordenadas
 	def cambiar_piezas(self, id1, id2):
 		aux = self.tablero_puzzle[id1]
 		coor2=self.tablero_puzzle[id2]['pos_o']
+
 		self.tablero_puzzle[id1]=self.tablero_puzzle[id2]
 		self.tablero_puzzle[id1]['pos_o']=aux['pos_o']
+
 		self.tablero_puzzle[id2]=aux
 		self.tablero_puzzle[id2]['pos_o']=coor2
 
+
 	def crear_imagen(self):
-		imagen = Image.new("RGB",(self.ancho_tablero,self.alto_tablero),"white")
+
+		imagen = Image.new("RGB",(self.ancho_tablero,self.alto_tablero),"white")#crea una imagen en blanco sobre la que se pegarán todas las demas
 		indice=0
 		
-
 		for x in xrange(self.columnas):
 			for y in xrange(self.filas):
 				x0 = x * self.ancho_pieza
 				y0 = y * self.alto_pieza
 
+				#recorre la lista de imagenes obteniendo las imagenes en el orden que están en el tablero de ese instante, y las pega juntas
 				imagen.paste(self.listaImg_Original[self.tablero_puzzle[indice]['id']],(x0,y0))
 				indice+=1
 
@@ -249,7 +275,7 @@ if __name__ == '__main__':
 	#IntermedioAlhambra41
 	#IntermedioAlhambra10x5
 	#Inicialalhambra10x5
-	app = puzzle('AlhambraInicialPuzzle4x4.png','IntermedioAlhambra41.png', 4,4) 
+	app = puzzle('Inicialalhambra10x5.png','IntermedioAlhambra10x5.png', 10,5) 
 	app.master.title('prueba')
 	app.mainloop()
 
