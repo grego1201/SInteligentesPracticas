@@ -205,7 +205,7 @@ class puzzle(tk.Frame):
 	def movimientos_validos(self, coor, movimiento):
 		valido=True
 
-		if (coor[0]==0 and movimiento==MOVE_LEFT) or (coor[0]==3 and movimiento==MOVE_RIGHT) or (coor[1]==0 and movimiento==MOVE_UP) or (coor[1]==3 and movimiento==MOVE_DOWN):
+		if (coor[0]==0 and movimiento==MOVE_LEFT) or (coor[0]==self.columnas-1 and movimiento==MOVE_RIGHT) or (coor[1]==0 and movimiento==MOVE_UP) or (coor[1]==self.filas-1 and movimiento==MOVE_DOWN):
 			valido=False
 
 		return valido
