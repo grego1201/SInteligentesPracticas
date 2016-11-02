@@ -245,6 +245,24 @@ def leer_entero():
 		except:
 			print "Porfavor introduzca un numero"
 
+'''
+nodo= {Padre,Estado,costo,Accion={left,right,up,down},valor}
+class Frontera():
+	def __init__(self):
+		self.frontera={}
+		
+	def isEmpty(self,frontera):
+		if len(frontera) is 0 :
+			print "vacia"
+		else:
+			print "No vacia"
+		
+	def insertar(self,nodo):
+		self.frontera.append(nodo)
+		self.frontera.sorted()
+	def eliminar(self):
+		self.frontera.pop(len(self.frontera))
+'''
 
 if __name__ == '__main__':
 
@@ -264,6 +282,7 @@ if __name__ == '__main__':
 	app.mainloop()
 
 '''
+			!!!!!!!!!!!!!!!!!!!!!!!HACER DIVISIBLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	while True:
 
 		try:
