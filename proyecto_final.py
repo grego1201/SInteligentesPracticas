@@ -7,6 +7,7 @@ import signal, os
 import Tkinter as tk
 import tkMessageBox
 from PIL import Image, ImageTk
+from os import listdir
 
 MOVE_UP = "Up"
 MOVE_DOWN = "Down"
@@ -280,6 +281,26 @@ def leer_Filas_Columnas(cadena):
 	n = [filas, columnas]
 	
 	return n
+
+def listar():
+	lista = []
+
+
+
+	for cosa in listdir("ImagenesPrueba/"):
+		lista.append(cosa)
+
+	return lista
+
+
+def escogerOpcion(lista):
+	opc = leer_entero()
+	while (opc<0 and opc>len(lista)):
+		opc = leer_entero()
+
+	return lista[opc]
+
+
 
 '''
 nodo= {Padre,Estado,costo,Accion={left,right,up,down},valor}
