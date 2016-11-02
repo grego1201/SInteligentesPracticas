@@ -244,6 +244,42 @@ def leer_entero():
 			return num
 		except:
 			print "Porfavor introduzca un numero"
+			
+			
+def leer_Filas_Columnas(cadena):
+
+	i=0
+
+	j=cadena.find(".") - 1
+
+	firstFind = False
+	while (j>0):
+		if not cadena[j].isdigit():
+			if not cadena[j]=="x":
+				print "Encontre algo distinto a x"
+				i=j+1
+				break
+
+			if cadena[j]=="x" and firstFind:
+				i=j+1
+				break
+
+			if cadena[j]=="x" and not firstFind:
+				firstFind = True
+
+		j-=1
+
+	print i
+
+	numeros = cadena[i:cadena.find(".")]
+
+	filas = numeros[0:numeros.find("x")]
+
+	columnas = numeros[numeros.find("x")+1:len(numeros)]
+	
+	n = [filas, columnas]
+	
+	return n
 
 '''
 nodo= {Padre,Estado,costo,Accion={left,right,up,down},valor}
