@@ -114,7 +114,7 @@ class puzzle(tk.Frame):
 		for x in range(0, len(self.listaImg_Original)):
 			for y in range(0,len(self.listaImg_Puzzle)):
 					if self.listaImg_Original[x] == self.listaImg_Puzzle[y]: # si los dos trozos son iguales...
-						iguales = iguales + 1
+						iguales = iguales + 1 
 
 						self.tablero_puzzle[y]['id']=self.tablero_original[x]['id']	#establece a la pieza desordenada la id que corresponde con la imagen original
 						self.listaImg_Puzzle[y]=[] # por si hay muchas imagenes dle mismo color, para que no vuelva a comparar y asignar el id a la misma, se elimina de la lista
