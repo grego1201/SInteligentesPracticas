@@ -16,6 +16,8 @@ MOVE_RIGHT = "Right"
 
 ''' -------------- LAS PIEZAS NO ALMACENAN IMAGENES, SOLO UN ID QUE RELACIONA LA PIEZA CON UNA IMAGEN ---------------'''
 
+''' -------- Clase puzzle, contiene la ejecucion principal ---------- '''
+''' ----------------------------------------------------------------- '''
 class puzzle(tk.Frame):
 
 	def __init__(self,imagen_o,imagen_p, columnas, filas):
@@ -33,11 +35,20 @@ class puzzle(tk.Frame):
 				self.after(2000,self.mover) #cada 1s llama al metodo mover 
 
 				#para probar lo de los sucesores una vez
-				listSuc=self.sucesores(self.tablero_puzzle)
+				listSuc=self.sucesores(self.tablero_puzzle, self.pivote)
 				for i in range(0,len(listSuc)):
 					print(listSuc[i]['movimiento'])	
 
-				#self.after(5000,self.crear_imagen) #crea una imagen del puzzle para probar el metodo a los 5s
+				#para probar a cear nodos con la lista de sucesores y meterlos en la frontera
+				front = frontera()
+				for i in listSuc:
+					front.insertar(nodo(0,i['estado'],i['coste'],i['movimiento'],random.randint(0,10),i['posPivote'])) #el padre como se identifica????? id nodo o algo asi?
+				
+				print("Valores de la frontera:")
+				while front.isEmpty() == False:
+					print(front.eliminar().getValor())
+
+				 #self.after(5000,self.crear_imagen) #crea una imagen del puzzle para probar el metodo a los 5s
 			else:
 				print ("--- La imágenes no son iguales ---")
 
@@ -114,7 +125,7 @@ class puzzle(tk.Frame):
 		for x in range(0, len(self.listaImg_Original)):
 			for y in range(0,len(self.listaImg_Puzzle)):
 					if self.listaImg_Original[x] == self.listaImg_Puzzle[y]: # si los dos trozos son iguales...
-						iguales = iguales + 1 
+						iguales = iguales + 1
 
 						self.tablero_puzzle[y]['id']=self.tablero_original[x]['id']	#establece a la pieza desordenada la id que corresponde con la imagen original
 						self.listaImg_Puzzle[y]=[] # por si hay muchas imagenes dle mismo color, para que no vuelva a comparar y asignar el id a la misma, se elimina de la lista
@@ -257,19 +268,16 @@ class puzzle(tk.Frame):
 
 		return objetivo
 
-	def sucesores(self,estado): #devuelve los estados sucesores desde un estado dado
+	def sucesores(self,estado, posPiv): #devuelve los estados sucesores desde un estado dado
 		#determina que movimientos puede hacer, el coste y el estado resultante de ello
 		#return (acc1,estado1,costAcc1)...(accM,estadoM,costAccM)
 		costeAcc = 1
-		coorPivote = movimiento = posPiv= None
+		coorPivote = movimiento =  None
 		lista_sucesores=[]
 
-		for i in range(0,len(estado)):
-			if estado[i]['pivote']==True:
-				coorPivote=estado[i]['coordenadas']
-				posPiv =i
-				i=len(estado)
-
+		
+		coorPivote=estado[posPiv]['coordenadas']
+	
 		if(self.movimientos_validos(coorPivote,MOVE_UP)):
 			movimiento=MOVE_UP
 			sucesor=self.nuevo_sucesor(movimiento,(self.cambiar_piezas(posPiv,(posPiv-1),estado)),costeAcc,posPiv-1)
@@ -296,6 +304,59 @@ class puzzle(tk.Frame):
 		sucesor = {'movimiento': movimiento, 'estado'  : estado, 'coste' : coste, 'posPivote': posPivote}
 		return sucesor
 
+''' -------- Clase nodo -------- '''
+''' ---------------------------- '''
+class nodo():
+	def __init__(self, padre, estado, costo, accion, valor, posPiv):
+		self.padre = padre
+		self.estado = estado
+		self.costo = costo
+		self.accion = accion
+		self.valor = valor
+		self.posPiv = posPiv
+
+	def getValor(self):
+		return self.valor
+
+	def getEstado(self):
+		return self.estado
+
+	def getCosto(self):
+		return self.costo
+
+	def getPadre(self):
+		return self.padre
+
+	def getPivote(self):
+		return self.posPiv
+
+	def getAccion(self):
+		return self.accion
+
+
+''' -------- Clase frontera -------- '''
+''' -------------------------------- '''
+class frontera():
+	def __init__(self):
+		self.frontera=[]
+
+	def isEmpty(self):
+		if len(self.frontera) is 0 :
+			return True
+		else:
+			return False
+
+	def insertar(self,nodo):
+		self.frontera.append(nodo)
+		# ordenamos los nodos por valor
+		self.frontera.sort(key=lambda nodo: nodo.valor)
+
+	def eliminar(self):
+		return self.frontera.pop(0)
+
+
+''' --- Main --- '''
+''' ------------ '''
 def leer_entero():
 	while True:
 		try:
@@ -303,37 +364,6 @@ def leer_entero():
 			return num
 		except:
 			print "Porfavor introduzca un numero"
-
-			
-class nodo():
-    def __init__(self, padre, estado, costo, accion, valor):
-        self.padre = padre
-        self.estado = estado
-        self.costo = costo
-        self.accion = accion
-        self.valor = valor
-
-class frontera():
-    def __init__(self):
-        self.frontera=[]
-
-    def isEmpty(self):
-        if len(self.frontera) is 0:
-            return True
-        else:
-            return False
-
-    def insertar(self,nodo):
-        self.frontera.append(nodo)
-        self.frontera.sort(key=lambda nodo: nodo.valor)
-
-    def eliminar(self):
-        self.frontera.pop(len(self.frontera))
-
-    def mostrar(self):
-        for i in self.frontera:
-            print i.valor
-
 
 
 if __name__ == '__main__':
