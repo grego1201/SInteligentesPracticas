@@ -304,6 +304,37 @@ def leer_entero():
 		except:
 			print "Porfavor introduzca un numero"
 
+			
+class nodo():
+    def __init__(self, padre, estado, costo, accion, valor):
+        self.padre = padre
+        self.estado = estado
+        self.costo = costo
+        self.accion = accion
+        self.valor = valor
+
+class frontera():
+    def __init__(self):
+        self.frontera=[]
+
+    def isEmpty(self):
+        if len(self.frontera) is 0:
+            return True
+        else:
+            return False
+
+    def insertar(self,nodo):
+        self.frontera.append(nodo)
+        self.frontera.sort(key=lambda nodo: nodo.valor)
+
+    def eliminar(self):
+        self.frontera.pop(len(self.frontera))
+
+    def mostrar(self):
+        for i in self.frontera:
+            print i.valor
+
+
 
 if __name__ == '__main__':
 
