@@ -48,11 +48,27 @@ class app(tk.Frame):
 				front = frontera()
 
 				nodos = 0
+				sum = 0
+				tiempoMax = 0
+				tiempoMin = 0
+				media = 0
+				tiempos = []
 				try:
 					while True:
 						nodos += 1
+						
+						tiempoActual = time()
 						front.insertar(nodo(0,listSuc[0]['estado'],listSuc[0]['coste'],listSuc[0]['movimiento'],random.randint(0,10),listSuc[0]['posPivote'])) #el padre como se identifica????? id nodo o algo asi?
-
+						tiempoDespues = time()
+						tiempoTardado = tiempoDespues - tiempoActual
+						if tiempoTardado is > tiempoMax:
+								tiempoMax = tiempoTardado
+						elif tiempoTardado is < tiempoMin:
+								tiempoMin = tiempoTardado
+						tiempos.append(tiempoTardado)
+					for i in xrange(tiempos):
+						sum = sum + i
+					media = sum/nodos
 				except MemoryError:
 					tiempoFin = time() - tiempoInicio
 					print str(tiempoFin) + " segundos"
