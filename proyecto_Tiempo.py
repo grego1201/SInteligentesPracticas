@@ -197,7 +197,7 @@ class app(tk.Frame):
 				x1 = x * self.ancho_pieza
 				y1 = y * self.alto_pieza
 
-				#obtiene la imagen correspondiente a la id almacenada y la muestra en la posicion x,y
+				#obtiene la imagen correspondiente  a la id almacenada y la muestra en la posicion x,y
 				image = self.imagenes[self.tablero_puzzle[index]['id']]
 				self.pintar(x1,y1,image)
 
