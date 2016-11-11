@@ -9,6 +9,7 @@ import signal, os
 import Tkinter as tk
 import tkMessageBox
 from PIL import Image, ImageTk
+import sortedcontainers
 
 MOVE_UP = "Up"
 MOVE_DOWN = "Down"
@@ -33,70 +34,64 @@ class app(tk.Frame):
 			self.crear_tablero_original()
 			if self.comprobar_imagenes():
 
-
-				#padre, estado, costo, accion, valor, posPiv):
-				#self.crear_canvas()
+				''' para comprobar si funcionaba el movimiento y el mostrar en el hito anterior'''
+             	#self.crear_canvas()
 				#self.mostrar()
 				#self.after(2000,self.mover) #cada 1s llama al metodo mover
 
-				#para probar lo de los sucesores una vez
-
-
+				#para probar lo de los sucesores y la frontera
 				tiempoInicial = time()
 				self.limitarMemoria(1<<30) # 1 para cantidad y 30 para unidad ( 1 giga)
 				listSuc=self.sucesores(self.tablero_puzzle, self.pivote)
 				front = frontera()
-
+				
 				nodos = 0
-				sum = 0
+				tiempoTotal = 0
 				tiempoMax = 0
 				tiempoMin = 0
 				media = 0
-				tiempos = []
-				try:
-					while True:
+				print("Inicio del test de tiempo...")
+				try:	
+					for x in range(0,100000):
+					#while True:
 						nodos += 1
 						
-						tiempoActual = time()
+						tiempoInicio = time()
 						front.insertar(nodo(0,listSuc[0]['estado'],listSuc[0]['coste'],listSuc[0]['movimiento'],random.randint(0,10),listSuc[0]['posPivote'])) #el padre como se identifica????? id nodo o algo asi?
-						tiempoDespues = time()
-						tiempoTardado = tiempoDespues - tiempoActual
-						if tiempoTardado is > tiempoMax:
+						tiempoFin = time()
+						tiempoTardado = tiempoFin - tiempoInicio
+						if tiempoTardado > tiempoMax:
 								tiempoMax = tiempoTardado
-						elif tiempoTardado is < tiempoMin:
+						elif tiempoTardado < tiempoMin:
 								tiempoMin = tiempoTardado
-						tiempos.append(tiempoTardado)
-					for i in xrange(tiempos):
-						sum = sum + i
-					media = sum/nodos
+						
+						tiempoTotal = tiempoTotal + tiempoTardado
+
+					media = tiempoTotal/nodos
+
+					print ("Tiempo total de ejecucion: " + str(tiempoTotal))
+					print ("Tiempo medio de insercion de un nodo: " + str(media))
+					print ("Tiempo maximo de insercion de un nodo: " + str(tiempoMax))
+					print ("Tiempo minimo de insercion de un nodo: " + str(tiempoMin))
+					print ("Numero de nodos insertados: " + str(len(front.getFrontera())))
+					print("Fin del test de tiempo...")
+					exit(0)
 				except MemoryError:
-					tiempoFin = time() - tiempoInicio
-					print str(tiempoFin) + " segundos"
-					print str(nodos) + "nodos creados"
+					tiempoFin = time() - tiempoInicial
+					print (str(tiempoFin) + " segundos")
+					print (str(nodos) + "nodos creados")
 					sys.stderr.write('\n\nExcepcion: Limite de memoria alcanzado\n')
-					sys.exit(-1)
+					exit(-1)
 
-
-
-
-				#para probar a crear nodos con la lista de sucesores y meterlos en la frontera
-
-
-				'''
-				print("Valores de la frontera:")
-				while front.isEmpty() == False:
-					print(front.eliminar().getValor())
-				'''
 
 				 #self.after(5000,self.crear_imagen) #crea una imagen del puzzle para probar el metodo a los 5s
 			else:
 				print ("--- La imágenes no son iguales ---")
 
 
-
 	def limitarMemoria(self, tamMax):
-	    soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-	    resource.setrlimit(resource.RLIMIT_AS, (tamMax, hard))
+		soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+		resource.setrlimit(resource.RLIMIT_AS, (tamMax, hard))
 
 	def obtener_datos(self, img_o, img_p):
 		try:
@@ -384,7 +379,7 @@ class nodo():
 ''' -------------------------------- '''
 class frontera():
 	def __init__(self):
-		self.frontera=[]
+		self.frontera=sortedcontainers.SortedListWithKey(key=lambda nodo: nodo.valor)
 
 	def isEmpty(self):
 		if len(self.frontera) is 0 :
@@ -393,12 +388,12 @@ class frontera():
 			return False
 
 	def insertar(self,nodo):
-		self.frontera.append(nodo)
-		# ordenamos los nodos por valor
-		self.frontera.sort(key=lambda nodo: nodo.valor)
+		self.frontera.add(nodo)
 
 	def eliminar(self):
 		return self.frontera.pop(0)
+	def getFrontera(self):
+		return self.frontera
 
 
 ''' --- Main --- '''
