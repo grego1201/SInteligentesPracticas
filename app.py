@@ -112,7 +112,7 @@ class app(tk.Frame):
 				else:
 					sucesores=self.problema.espacioEstados.sucesores(node.getEstado(), node.getPivote())
 					for i in sucesores:
-						insertar=self.comprobarSiInsertar(node,i)	
+						insertar=self.comprobarSiInsertar(node,i)#poda	
 						if insertar==True:
 							self.insertarNodo(node, i, estrategia, node.getProfuncidad()+1)
 							totalNodos+=1
